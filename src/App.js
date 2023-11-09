@@ -5,11 +5,15 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 import NavBar from './Components/Nav';
 import Card from './Components/Card';
+import Modal from './Components/Modal';
 
 
 function App() {
   const [list, setList] = useState([]);
   const [activePage, setActivePage] = useState(1);
+  const [selectedItem, setSelectedItem] = useState({})
+  const [showModal, setShowModal] = useState(false);
+
   const getInitData = async () => {
     try {
       const res = await fetch('https://cx-interview-api.dev.ecmapps.com/products?page=large-page')
@@ -44,6 +48,11 @@ function App() {
     getInitData()
   }, [])
 
+  const selectProduct = (l) => {
+    setSelectedItem(l)
+    setShowModal(true)
+  }
+
   if (!list.length) return null
   return (
     < div >
@@ -53,7 +62,7 @@ function App() {
           {
             list[activePage]?.map((l, i) => (
               <Col key={`card-${i}`} xs={1} sm={1} md={4}>
-                <Card {...l} />
+                <Card {...l} onClick={() => selectProduct(l)} />
               </Col>
             ))
           }
@@ -70,6 +79,11 @@ function App() {
           </Col>
         </Row>
       </Container>
+      <Modal
+        {...selectedItem}
+        show={showModal}
+        handleClose={() => setShowModal(false)}
+      />
     </div >
   );
 }
