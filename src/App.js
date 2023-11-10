@@ -12,16 +12,31 @@ import LoadingIndicator from './Components/LoadingIndicator';
 
 function App() {
   const [list, setList] = useState([]);
+  const [content, setContent] = useState([]);
   const [activePage, setActivePage] = useState(1);
   const [selectedItem, setSelectedItem] = useState({})
   const [showModal, setShowModal] = useState(false);
 
+  const processContentData = (contentData) => {
+    const contentObj = {};
+    contentData.map((c) => {
+      const [_, position] = c.position.split('-');
+      contentObj[position] = c;
+    });
+    return contentObj;
+  }
+
   const getInitData = async () => {
     try {
-      const res = await fetch('https://cx-interview-api.dev.ecmapps.com/products?page=large-page')
-      const data = await res.json()
-      const arr = chunk(data.products, 9)
+      const productRes = await fetch('https://cx-interview-api.dev.ecmapps.com/products?page=large-page')
+      const productData = await productRes.json()
+      const arr = chunk(productData.products, 9)
       setList(arr)
+
+
+      const contentRes = await fetch('https://cx-interview-api.dev.ecmapps.com/content?page=large-page');
+      const contentData = await contentRes.json();
+      setContent(processContentData(contentData.data));
     } catch (e) {
       window.alert(e.message)
     }
@@ -37,6 +52,8 @@ function App() {
     setShowModal(true)
   }
 
+  console.log('content', content)
+  console.log('content[activePage]', content[activePage])
   if (!list.length)
     return <LoadingIndicator />
 
@@ -44,6 +61,14 @@ function App() {
     <div >
       <NavBar />
       <Container>
+        {
+          content?.[activePage]?.contents ?
+            <Row>
+              <Col xs={12} sm={6} md={4} className="pt-3" >
+                <div dangerouslySetInnerHTML={{ __html: content[activePage].contents }} />
+              </Col>
+            </Row> : null
+        }
         <Row>
           {
             list[activePage]?.map((l, i) => (
